@@ -3,6 +3,10 @@ pd.__version__
 from sqlalchemy import create_engine
 from time import time
 import argparse
+import os
+import requests
+import gzip
+import shutil
 
 def main(params):
 	user = params.user
@@ -11,16 +15,30 @@ def main(params):
 	port = params.port
 	db = params.db
 	table = params.table
-	csv = params.csv
+	csv_url = params.csv_url
 
+	zip_name = 'output.csv.gz'
+	csv_name = 'output.csv'
+
+	response = requests.get(csv_url)
+	with open(zip_name, 'wb') as f:
+		f.write(response.content)
+	
+	with gzip.open(zip_name, 'rb') as f_in:
+		with open(csv_name, 'wb') as f_out:
+			shutil.copyfileobj(f_in, f_out)
+
+	print("Ready to connect")
 	engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
-	df = pd.read_csv(csv, nrows=100)
+	print("Connection successful")
+	
+	df = pd.read_csv(csv_name, nrows=100)
 	df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
 	df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 	df.head(n=0).to_sql(table, engine, if_exists='replace', index=False)
 
 
-	df_iter = pd.read_csv(csv, iterator=True, chunksize=100000, dtype = {'store_and_fwd_flag': 'str'})
+	df_iter = pd.read_csv(csv_name, iterator=True, chunksize=100000, dtype = {'store_and_fwd_flag': 'str'})
 
 	while True:
 		t_start = time()
@@ -44,7 +62,7 @@ if __name__ == '__main__':
 	parser.add_argument('--port', help='port for postgres')
 	parser.add_argument('--db', help='database name for postgres')
 	parser.add_argument('--table', help='name of the table where we will write the results to')
-	parser.add_argument('--csv', help='path to the csv file')
+	parser.add_argument('--csv_url', help='URL to the csv file')
 
 	args = parser.parse_args()
 	main(args)
