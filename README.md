@@ -1,7 +1,7 @@
 # Learning Excersice using Python, Postgre and Dockers
 
 ## Objective: 
-Build a dashboard that explore the information of the NY Taxi's trips in the official datasets published by [New York City Taxi and Limousine Commission]('https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page')
+Build a dashboard to explore information about NYC Taxi trips using the official datasets published by the [New York City Taxi and Limousine Commission](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
 
 ## Progress:
 ### V0.1
@@ -17,6 +17,8 @@ Finally, I migrated the Python logic into a functional `.py` script to run insid
 
 <img width="3582" height="1839" alt="Picture1" src="https://github.com/user-attachments/assets/13cd2769-116b-437a-ae89-7c76468f7e51" />
 <img width="1868" height="948" alt="image" src="https://github.com/user-attachments/assets/73d6432a-bef0-40ac-8b5f-bee236d34b4d" />
+<img width="1253" height="708" alt="image" src="https://github.com/user-attachments/assets/ce69cd37-8d1d-4447-8856-6a982357fb9a" />
+
 
 #### Next Steps (V0.2)
 - Improve containerization and dockerize more components of the solution.  
