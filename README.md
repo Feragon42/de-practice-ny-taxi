@@ -1,4 +1,4 @@
-# Learning Excersice using Python, Postgre and Dockers
+# Learning Exercise using Python, Postgre and Dockers
 
 ## Objective: 
 Build a dashboard to explore information about NYC Taxi trips using the official datasets published by the [New York City Taxi and Limousine Commission](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
@@ -21,9 +21,9 @@ Finally, I migrated the Python logic into a functional `.py` script to run insid
 
 
 #### Next Steps (V0.2)
-~~- Improve containerization and dockerize more components of the solution.  ~~
-~~- Update `upload_data.py` logic to use **Parquet** instead of CSV. (This first version was based on a 2021 tutorial that still used CSV, but TLC now provides Parquet files.)  ~~
-~~- Standardize the solution to ingest all available Parquet datasets.  ~~
+- ~Improve containerization and dockerize more components of the solution.~
+- ~Update `upload_data.py` logic to use **Parquet** instead of CSV. (This first version was based on a 2021 tutorial that still used CSV, but TLC now provides Parquet files.)~
+- ~Standardize the solution to ingest all available Parquet datasets.~
 - Explore the data and start designing a simple hand-made dashboard.
 
 
