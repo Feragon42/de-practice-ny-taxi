@@ -31,11 +31,17 @@ Finally, I migrated the Python logic into a functional `.py` script to run insid
 
 ### V0.2
 In this version, a scraping ingest flow was implemented.
-IMAGE
+
+![flow](https://github.com/user-attachments/assets/a33b69e7-805c-4329-bbe9-6c466c278643)
+
 Using **argparse**, parameters were added to the Python script to let the user specify the connection information, the target webpage URL (in case it changes in the future) and the desire data extraction period.
 The code makes a request to the NYC webpage to retrieve its DOM, then parses it with **BeautifulSoup**, extracting the URLs of all parquet files and selecting only those that match the specified period.
 Afterwards, the parquet files are processed with **dask** using the **pyarrow** engine, and partitioned into 100mb chunks, ready to be appended to their respective tables in the PostgresSQL database.
 Finally, the Python script was packaged into a Docker image for easy and consistent execution.
+
+<img width="1108" height="617" alt="Screenshot 2025-09-08 091116" src="https://github.com/user-attachments/assets/6b179d70-9c56-4980-99ba-f8fc7c4643eb" />
+<img width="1107" height="615" alt="Screenshot 2025-09-08 093529" src="https://github.com/user-attachments/assets/214a3c82-0ac4-4dfb-a0b3-039fcf626757" />
+
 
 #### Next Steps (V0.3)
 - Explore the data and start designing a simple dashboard.
