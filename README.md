@@ -21,7 +21,21 @@ Finally, I migrated the Python logic into a functional `.py` script to run insid
 
 
 #### Next Steps (V0.2)
-- Improve containerization and dockerize more components of the solution.  
-- Update `upload_data.py` logic to use **Parquet** instead of CSV. (This first version was based on a 2021 tutorial that still used CSV, but TLC now provides Parquet files.)  
-- Standardize the solution to ingest all available Parquet datasets.  
-- Explore the data and start designing a simple hand-made dashboard. 
+~~- Improve containerization and dockerize more components of the solution.  ~~
+~~- Update `upload_data.py` logic to use **Parquet** instead of CSV. (This first version was based on a 2021 tutorial that still used CSV, but TLC now provides Parquet files.)  ~~
+~~- Standardize the solution to ingest all available Parquet datasets.  ~~
+- Explore the data and start designing a simple hand-made dashboard.
+
+
+---
+
+### V0.2
+In this version, a scraping ingest flow was implemented.
+IMAGE
+Using **argparse**, parameters were added to the Python script to let the user specify the connection information, the target webpage URL (in case it changes in the future) and the desire data extraction period.
+The code makes a request to the NYC webpage to retrieve its DOM, then parses it with **BeautifulSoup**, extracting the URLs of all parquet files and selecting only those that match the specified period.
+Afterwards, the parquet files are processed with **dask** using the **pyarrow** engine, and partitioned into 100mb chunks, ready to be appended to their respective tables in the PostgresSQL database.
+Finally, the Python script was packaged into a Docker image for easy and consistent execution.
+
+#### Next Steps (V0.3)
+- Explore the data and start designing a simple dashboard.

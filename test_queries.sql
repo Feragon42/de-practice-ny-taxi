@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS UPLOAD_CONTROLLER (
 select * from upload_controller;
 
 
-
+INSERT INTO upload_controller
+SELECT 'ny_taxi_yellow' AS table_name, '2025-02' AS period, CURRENT_TIMESTAMP, COUNT(*) AS ROW_COUNT
+FROM ny_taxi_yellow where tpep_pickup_datetime >= '2025-02-01';
 -- INSERT INTO upload_controller
 -- SELECT 'ny_taxi_green' AS table_name, '2025-01' AS period, CURRENT_TIMESTAMP, COUNT(*) AS ROW_COUNT
 -- FROM ny_taxi_green

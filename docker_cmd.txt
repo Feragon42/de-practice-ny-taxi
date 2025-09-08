@@ -25,12 +25,12 @@ python upload_data.py `
 	--table=ny_taxi_data `
 	--csv_url=https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz
 
-docker build -t ny_taxi_upload:v2
+docker build -t ny_taxi_upload:v1 .
 
 docker run -it `
 	--network=pg-network `
 	--name=pg-upload `
-	ny_taxi_upload:v1 `
+	ny_taxi_upload:v2 `
 		--user=root `
 		--password=root `
 		--host=pg-database `
@@ -38,3 +38,17 @@ docker run -it `
 		--db=ny_taxi `
 		--table=ny_taxi_data `
 		--csv_url=https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz
+
+docker build -t ny_taxi_upload:v2 .
+
+docker run -it `
+	--network=pg-network `
+	--name=pg-upload `
+	ny_taxi_upload:v2 `
+		--host=pg-database `
+		--period=2025-02
+
+---The compose docker was not connected to the network, so I need to connect pg-databse manually
+---before excecute pg-upload
+docker network connect pg-network pg-database
+---Fix this later

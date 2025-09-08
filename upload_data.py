@@ -2,6 +2,7 @@ import pandas as pd
 pd.__version__
 from sqlalchemy import create_engine, true
 from sqlalchemy import inspect
+from sqlalchemy import text
 from time import time
 import argparse
 import os
@@ -106,9 +107,9 @@ def upload_files_to_db(files_list, connection, tables, period):
 				#The if_exists='append' does nothing if the table have 0 rows, so I preffer that this create it
 				t_end = time()
 				print(f"Chunk from {file} uploaded in {t_end - t_start} seconds")
-			connection.execute(f"INSERT INTO upload_controller (table_name, period, upload_time, row_count) \
+			connection.execute(text(f"INSERT INTO upload_controller (table_name, period, upload_time, row_count) \
 				SELECT '{table_name}' AS table_name, '{period}' AS period, CURRENT_TIMESTAMP, COUNT(*) AS ROW_COUNT \
-				FROM {table_name}")
+				FROM {table_name}"))
 		return True
 	except Exception as e:
 		print(f"Error uploading files to DB: {e}")
