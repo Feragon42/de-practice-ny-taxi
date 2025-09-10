@@ -43,7 +43,6 @@ docker build -t ny_taxi_upload:v2 .
 
 docker run -it `
 	--network=pg-network `
-	--name=pg-upload `
 	ny_taxi_upload:v2 `
 		--host=pg-database `
 		--period=2025-02

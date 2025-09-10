@@ -27,30 +27,48 @@ def main(params):
 	engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
 	print(f"Connection successful to postgresql://{user}:{password}@{host}:{port}/{db}")
 	
-	file_url_list = obtain_source_file_url(source_url,period)
-	if len(file_url_list) > 0:
-		file_name_list, download_status = manage_files(file_url_list, 'download')
-		if download_status == True and len(file_name_list) > 0:
-			upload_status = False
-			with engine.connect() as engine:
+	with engine.connect() as engine:
+		required_files = get_required_files_for_period(period, engine, tables)
+		file_url_list = obtain_source_file_url(source_url,period,required_files)
+		if len(file_url_list) > 0:
+			file_name_list, download_status = manage_files(file_url_list, 'download')
+			if download_status == True and len(file_name_list) > 0:
 				upload_status = upload_files_to_db(file_name_list, engine, tables, period)
-			if upload_status == True:
-				manage_files(file_name_list, 'delete')
-	else:
-		print("No files found")
-		return
+				if upload_status == True:
+					manage_files(file_name_list, 'delete')
+		else:
+			print("No files found")
+			return
 
-def obtain_source_file_url(source_url, period):
+def obtain_source_file_url(source_url, period, required_files):
+	if required_files is None or len(required_files) == 0:
+		return []
+
 	files_url = []
 
 	response = requests.get(source_url)
 	soup = bs(response.content, 'html.parser')
 	for link in soup.find_all('a'):
 		url = link.get('href')
-		if url.endswith('.parquet') and period in url:
+		if url.endswith('.parquet') and period in url and any(req_file in url for req_file in required_files):
 			files_url.append(url)
 
 	return files_url
+
+def get_required_files_for_period(period, connection, tables):
+	required_files = []
+	try:
+		query = text(f"SELECT DISTINCT table_name FROM upload_controller WHERE period = '{period}'")
+		result = connection.execute(query)
+		uploaded_tables = [row[0] for row in result.fetchall()] #Get all tables already uploaded for that period
+		for table in tables:
+			if tables[table] not in uploaded_tables:
+				required_files.append(table) #Get the identificator of the files that werent uploaded yet
+		return required_files
+	except Exception as e:
+		print(f"Error checking required files: {e}")
+		return []
+
 
 def manage_files(files_url, actions='download'):
 	file_names_list = []
@@ -102,14 +120,21 @@ def upload_files_to_db(files_list, connection, tables, period):
 			for partition in df.partitions:
 				t_start = time()
 				chunk = partition.compute()
-				print(f"Chunk size: {len(chunk)}")
-				chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
-				#The if_exists='append' does nothing if the table have 0 rows, so I preffer that this create it
-				t_end = time()
-				print(f"Chunk from {file} uploaded in {t_end - t_start} seconds")
-			connection.execute(text(f"INSERT INTO upload_controller (table_name, period, upload_time, row_count) \
+				chunk['period'] = period
+				print(f"Inserting chunk (size: {len(chunk)}) into {table_name} for period {period}")
+				try:
+					chunk.to_sql(name='table_name', con=connection, if_exists='append', index=False)
+					#The if_exists='append' does nothing if the table have 0 rows, so I preffer that this create it
+					t_end = time()
+					print(f"Chunk inserted into {table_name} successfully in {t_end - t_start} seconds")
+				except Exception as e:
+					print(f"Error inserting chunk into {table_name}: {e}")
+					return False
+				
+			connection.execute(text(f"INSERT INTO upload_controller (table_name, period, upload_date, row_count) \
 				SELECT '{table_name}' AS table_name, '{period}' AS period, CURRENT_TIMESTAMP, COUNT(*) AS ROW_COUNT \
-				FROM {table_name}"))
+				FROM {table_name} \
+				WHERE period = '{period}'"))
 		return True
 	except Exception as e:
 		print(f"Error uploading files to DB: {e}")
