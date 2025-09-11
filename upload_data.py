@@ -1,8 +1,6 @@
 import pandas as pd
 pd.__version__
-from sqlalchemy import create_engine, true
-from sqlalchemy import inspect
-from sqlalchemy import text
+from sqlalchemy import create_engine, true, inspect, text
 from time import time
 import argparse
 import os
@@ -22,18 +20,19 @@ def main(params):
 	print(f"Starting the ingestion process from web to Postgres, for period: {period}")
 	print(f"parameters: user={user}, password={password}, host={host}, port={port}, db={db}, source_url={source_url}")
 
-	tables = {"yellow": "ny_taxi_yellow", "green": "ny_taxi_green", "fhv": "ny_taxi_fhv", "fhvhv": "ny_taxi_fhv_hv"}
+	#tables = {"yellow": "ny_taxi_yellow", "green": "ny_taxi_green", "fhv": "ny_taxi_fhv", "fhvhv": "ny_taxi_fhv_hv"}
+	tables = {"yellow": "ny_taxi_yellow", "green": "ny_taxi_green"} # For testing purposes, to avoid larger files
 
-	engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}')
+	engine = create_engine(f'postgresql://{user}:{password}@{host}:{port}/{db}',isolation_level="AUTOCOMMIT")
 	print(f"Connection successful to postgresql://{user}:{password}@{host}:{port}/{db}")
-	
-	with engine.connect() as engine:
-		required_files = get_required_files_for_period(period, engine, tables)
+
+	with engine.connect() as connection:
+		required_files = get_required_files_for_period(period, connection, tables)
 		file_url_list = obtain_source_file_url(source_url,period,required_files)
 		if len(file_url_list) > 0:
 			file_name_list, download_status = manage_files(file_url_list, 'download')
 			if download_status == True and len(file_name_list) > 0:
-				upload_status = upload_files_to_db(file_name_list, engine, tables, period)
+				upload_status = upload_files_to_db(file_name_list, connection, tables, period)
 				if upload_status == True:
 					manage_files(file_name_list, 'delete')
 		else:
@@ -120,10 +119,10 @@ def upload_files_to_db(files_list, connection, tables, period):
 			for partition in df.partitions:
 				t_start = time()
 				chunk = partition.compute()
-				chunk['period'] = period
+				chunk['period'] = str(period)
 				print(f"Inserting chunk (size: {len(chunk)}) into {table_name} for period {period}")
 				try:
-					chunk.to_sql(name='table_name', con=connection, if_exists='append', index=False)
+					chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
 					#The if_exists='append' does nothing if the table have 0 rows, so I preffer that this create it
 					t_end = time()
 					print(f"Chunk inserted into {table_name} successfully in {t_end - t_start} seconds")

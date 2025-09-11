@@ -22,7 +22,10 @@ CREATE TABLE IF NOT EXISTS UPLOAD_CONTROLLER (
 	PRIMARY KEY (table_name, period)
 );
 
-select * from upload_controller;
+select * from upload_controller ORDER BY table_name, period;
+delete from upload_controller where table_name in ('ny_taxi_fhv_hv', 'ny_taxi_fhv') and period = '2025-02';
+delete from upload_controller where table_name in ('ny_taxi_yellow') and period = '2025-01';
+delete from ny_taxi_yellow where period = '2025-01';
 
 --INSERT INTO upload_controller
 SELECT 'ny_taxi_yellow' AS table_name, '2025-02' AS period, CURRENT_TIMESTAMP, COUNT(*) AS ROW_COUNT
