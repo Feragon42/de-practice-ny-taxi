@@ -57,7 +57,7 @@ def upload_dimension_to_db(file_url, connection):
 		start_time = time()
 		df = dd.read_csv(file_name)
 		df = df.compute()
-		df.columns = [col.upper() for col in df.columns] ##Apply this in the taxi trips tables too
+		df.columns = [col.lower() for col in df.columns] ##Apply this in the taxi trips tables too
 		df.to_sql(name='taxi_zones', con=connection, if_exists='replace', index=False)
 		end_time = time()
 		print(f"Dimension upload process finished for file: {file_name}, took {end_time - start_time} seconds")
